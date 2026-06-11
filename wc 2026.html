@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#0B3D2E">
+<title>Coupe du Monde 26 · Pronos</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;800&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --pitch: #0B3D2E; --pitch-light: #14523E; --chalk: #F5F7F2; --ink: #152033;
+    --france: #11337F; --canada: #D52B1E; --gold: #C9A227; --line: #D8DED6; --muted: #6B7568;
+  }
+  * { box-sizing: border-box; margin: 0; }
+  body { background: var(--chalk); color: var(--ink); font-family: 'Inter', system-ui, sans-serif; }
+  .display { font-family: 'Barlow Condensed', system-ui, sans-serif; font-weight: 800; text-transform: uppercase; letter-spacing: .5px; }
+  .wrap { max-width: 640px; margin: 0 auto; padding: 0 16px; }
+
+  header { background: linear-gradient(135deg, var(--pitch), var(--pitch-light)); padding: calc(18px + env(safe-area-inset-top)) 0 16px; position: relative; overflow: hidden; }
+  header .circle { position: absolute; right: -70px; top: -70px; width: 220px; height: 220px; border-radius: 50%; border: 2px solid rgba(245,247,242,.15); }
+  header h1 { font-size: 28px; color: var(--chalk); line-height: 1.05; }
+  header .sub { font-size: 12px; color: rgba(245,247,242,.75); margin: 4px 0 12px; }
+  #countdown-label { font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: rgba(245,247,242,.7); }
+  #countdown { font-size: 24px; color: var(--chalk); line-height: 1; }
+
+  .tabs { display: flex; gap: 6px; padding-top: 12px; }
+  .tabs button { flex: 1; padding: 10px 0; font-size: 14.5px; border: none; border-radius: 9px; cursor: pointer;
+    background: #fff; color: var(--muted); box-shadow: inset 0 0 0 1px var(--line); }
+  .tabs button.active { background: var(--pitch); color: var(--chalk); box-shadow: none; }
+
+  .pills { display: flex; gap: 6px; overflow-x: auto; padding: 12px 16px 0; scrollbar-width: none; max-width: 640px; margin: 0 auto; }
+  .pills::-webkit-scrollbar { display: none; }
+  .pills button { padding: 7px 12px; font-size: 13px; font-weight: 700; border: none; border-radius: 99px; cursor: pointer;
+    white-space: nowrap; flex-shrink: 0; background: #fff; color: var(--muted); box-shadow: inset 0 0 0 1px var(--line); }
+  .pills button.active { color: #fff; box-shadow: none; }
+
+  main { padding: 14px 0 32px; }
+  .card { background: #fff; border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; margin-bottom: 8px; }
+  .card .date { font-size: 11px; color: var(--muted); font-weight: 600; margin-bottom: 6px; }
+  .row { display: flex; align-items: center; gap: 8px; }
+  .row .team { flex: 1; font-size: 14px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .row .team.left { text-align: right; }
+  .row input { width: 38px; height: 38px; text-align: center; font-size: 16px; font-weight: 700; color: var(--ink);
+    border: 1.5px solid var(--line); border-radius: 8px; background: var(--chalk); outline: none; flex-shrink: 0; font-family: inherit; }
+  .row input:focus { border-color: var(--gold); box-shadow: 0 0 0 3px rgba(201,162,39,.2); }
+
+  table { width: 100%; border-collapse: collapse; font-size: 13.5px; background: #fff; }
+  .table-box { border: 1px solid var(--line); border-radius: 10px; overflow: hidden; margin-top: 4px; }
+  th { padding: 8px 10px; font-size: 11px; letter-spacing: 1px; text-transform: uppercase; font-weight: 600;
+    text-align: center; background: var(--pitch); color: var(--chalk); }
+  th.left, td.left { text-align: left; }
+  td { padding: 9px 10px; text-align: center; border-top: 1px solid var(--line); position: relative; }
+  td .zone { position: absolute; left: 0; top: 0; bottom: 0; width: 3px; }
+  tr.fav { background: rgba(201,162,39,.08); }
+  tr.repechage-in { background: rgba(201,162,39,.06); }
+  tr.idle { opacity: .45; }
+
+  .legend { font-size: 11.5px; color: var(--muted); margin: 6px 2px 0; }
+  .note { font-size: 13.5px; color: var(--muted); margin: 0 2px 8px; }
+  .reset { margin-top: 10px; padding: 8px 14px; font-size: 13px; font-weight: 600; border: 1px solid var(--line);
+    border-radius: 8px; background: #fff; color: var(--muted); cursor: pointer; font-family: inherit; }
+  button:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+  footer { text-align: center; padding: 0 16px calc(24px + env(safe-area-inset-bottom)); font-size: 11.5px; color: var(--muted); }
+  .hidden { display: none; }
+  @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="circle"></div>
+  <div class="wrap">
+    <h1 class="display">Coupe du Monde 26</h1>
+    <div class="sub">48 équipes · 12 groupes · 11 juin – 19 juillet</div>
+    <div id="countdown-label">Ouverture · Mexique – Afrique du Sud</div>
+    <div id="countdown" class="display"></div>
+  </div>
+</header>
+
+<div class="wrap tabs">
+  <button id="tab-groupes" class="display active">Groupes &amp; Simulateur</button>
+  <button id="tab-tiers" class="display">Meilleurs 3es</button>
+</div>
+
+<div class="pills" id="pills"></div>
+
+<main class="wrap">
+  <div id="view-groupes"></div>
+  <div id="view-tiers" class="hidden"></div>
+</main>
+
+<footer>💾 Pronos sauvegardés sur cet appareil · Heures en heure de l'Est (Québec)</footer>
+
+<script>
+/* ---------- données : tirage officiel du 5 déc. 2025, barrages de mars 2026 inclus ---------- */
+const GROUPS = {
+  A: ["Mexique|🇲🇽","Afrique du Sud|🇿🇦","Corée du Sud|🇰🇷","Tchéquie|🇨🇿"],
+  B: ["Canada|🇨🇦","Bosnie-H.|🇧🇦","Qatar|🇶🇦","Suisse|🇨🇭"],
+  C: ["Brésil|🇧🇷","Maroc|🇲🇦","Haïti|🇭🇹","Écosse|🏴󠁧󠁢󠁳󠁣󠁴󠁿"],
+  D: ["États-Unis|🇺🇸","Paraguay|🇵🇾","Australie|🇦🇺","Turquie|🇹🇷"],
+  E: ["Allemagne|🇩🇪","Curaçao|🇨🇼","Côte d'Ivoire|🇨🇮","Équateur|🇪🇨"],
+  F: ["Pays-Bas|🇳🇱","Japon|🇯🇵","Suède|🇸🇪","Tunisie|🇹🇳"],
+  G: ["Belgique|🇧🇪","Égypte|🇪🇬","Iran|🇮🇷","Nouvelle-Zélande|🇳🇿"],
+  H: ["Espagne|🇪🇸","Cap-Vert|🇨🇻","Arabie saoudite|🇸🇦","Uruguay|🇺🇾"],
+  I: ["France|🇫🇷","Sénégal|🇸🇳","Irak|🇮🇶","Norvège|🇳🇴"],
+  J: ["Argentine|🇦🇷","Algérie|🇩🇿","Autriche|🇦🇹","Jordanie|🇯🇴"],
+  K: ["Portugal|🇵🇹","RD Congo|🇨🇩","Ouzbékistan|🇺🇿","Colombie|🇨🇴"],
+  L: ["Angleterre|🏴󠁧󠁢󠁥󠁮󠁧󠁿","Croatie|🇭🇷","Ghana|🇬🇭","Panama|🇵🇦"],
+};
+const FAVORITES = { I: "France", B: "Canada" };
+const GROUP_ORDER = ["I","B","A","C","D","E","F","G","H","J","K","L"];
+const PAIRS = [[0,1],[2,3],[3,1],[0,2],[3,0],[1,2]];
+const KNOWN_DATES = {
+  "A|Mexique|Afrique du Sud":"Jeu 11 juin · Ouverture · Stade Azteca",
+  "B|Canada|Bosnie-H.":"Ven 12 juin · 15 h · Toronto",
+  "B|Qatar|Suisse":"Sam 13 juin · 15 h · San Francisco",
+  "B|Suisse|Bosnie-H.":"Jeu 18 juin · 15 h · Los Angeles",
+  "B|Canada|Qatar":"Jeu 18 juin · 18 h · Vancouver",
+  "B|Suisse|Canada":"Mer 24 juin · 15 h · Vancouver",
+  "B|Bosnie-H.|Qatar":"Mer 24 juin · 15 h · Seattle",
+  "C|Brésil|Maroc":"Dim 14 juin",
+  "C|Écosse|Maroc":"Jeu 18 juin",
+  "I|France|Sénégal":"Mar 16 juin · 15 h · New York NJ",
+  "I|France|Irak":"Lun 22 juin · 17 h",
+  "I|Norvège|Sénégal":"Lun 22 juin · 20 h",
+  "I|Norvège|France":"Ven 26 juin · 15 h",
+  "I|Sénégal|Irak":"Ven 26 juin",
+};
+const KICKOFF = new Date("2026-06-11T15:00:00-04:00");
+const STORAGE_KEY = "wc26-pronos";
+
+const name = (g,i) => GROUPS[g][i].split("|")[0];
+const flag = (g,i) => GROUPS[g][i].split("|")[1];
+const matches = (g) => PAIRS.map(([h,a],i) => {
+  const d = KNOWN_DATES[`${g}|${name(g,h)}|${name(g,a)}`] || "";
+  return { id:`${g}${i}`, g, h, a, date:d };
+});
+
+/* ---------- état ---------- */
+let scores = {};
+try { scores = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {}; } catch(e) { scores = {}; }
+let currentGroup = "I";
+let currentTab = "groupes";
+const save = () => { try { localStorage.setItem(STORAGE_KEY, JSON.stringify(scores)); } catch(e){} };
+
+/* ---------- classement (pts, diff, buts pour) ---------- */
+function standings(g) {
+  const rows = GROUPS[g].map((_,i) => ({ idx:i, pj:0, pts:0, bp:0, bc:0 }));
+  matches(g).forEach(m => {
+    const s = scores[m.id];
+    if (!s || s[0]==="" || s[1]==="") return;
+    const hs = +s[0], as = +s[1];
+    const H = rows[m.h], A = rows[m.a];
+    H.pj++; A.pj++; H.bp+=hs; H.bc+=as; A.bp+=as; A.bc+=hs;
+    if (hs>as) H.pts+=3; else if (hs<as) A.pts+=3; else { H.pts++; A.pts++; }
+  });
+  return rows.sort((x,y) => y.pts-x.pts || (y.bp-y.bc)-(x.bp-x.bc) || y.bp-x.bp || name(g,x.idx).localeCompare(name(g,y.idx)));
+}
+
+/* ---------- rendu ---------- */
+const $ = (id) => document.getElementById(id);
+
+function renderPills() {
+  $("pills").innerHTML = GROUP_ORDER.map(g => {
+    const active = g === currentGroup;
+    const color = g==="I" ? "var(--france)" : g==="B" ? "var(--canada)" : "var(--pitch)";
+    const style = active ? `background:${color};` : "";
+    const prefix = FAVORITES[g] ? flag(g,0)+" " : "";
+    return `<button class="${active?'active':''}" style="${style}" data-g="${g}">${prefix}Groupe ${g}</button>`;
+  }).join("");
+  $("pills").querySelectorAll("button").forEach(b =>
+    b.addEventListener("click", () => { currentGroup = b.dataset.g; renderPills(); renderGroup(); })
+  );
+}
+
+function standingsHTML(g) {
+  const fav = FAVORITES[g];
+  const rows = standings(g);
+  return `<div class="table-box"><table>
+    <thead><tr><th>#</th><th class="left">Équipe</th><th>PJ</th><th>Diff</th><th>Pts</th></tr></thead>
+    <tbody>${rows.map((r,i) => {
+      const n = name(g,r.idx);
+      const zone = i<2 ? "var(--gold)" : i===2 ? "#9AA79B" : "transparent";
+      const diff = r.bp-r.bc;
+      return `<tr class="${n===fav?'fav':''}">
+        <td><span class="zone" style="background:${zone}"></span>${i+1}</td>
+        <td class="left" style="font-weight:${n===fav?700:500}">${flag(g,r.idx)} ${n}</td>
+        <td>${r.pj}</td><td>${diff>0?'+':''}${diff}</td><td style="font-weight:700">${r.pts}</td>
+      </tr>`;
+    }).join("")}</tbody></table></div>
+    <p class="legend"><span style="color:var(--gold);font-weight:700">▎</span> Top 2 : qualifié direct ·
+    <span style="color:#9AA79B;font-weight:700">▎</span> 3e : repêchage possible — voir « Meilleurs 3es »</p>`;
+}
+
+function renderGroup() {
+  const g = currentGroup;
+  $("view-groupes").innerHTML = matches(g).map(m => {
+    const s = scores[m.id] || ["",""];
+    return `<div class="card">
+      ${m.date ? `<div class="date">${m.date} HE</div>` : ""}
+      <div class="row">
+        <span class="team left">${name(g,m.h)} ${flag(g,m.h)}</span>
+        <input inputmode="numeric" maxlength="2" value="${s[0]}" data-m="${m.id}" data-side="0" aria-label="Buts ${name(g,m.h)}">
+        <input inputmode="numeric" maxlength="2" value="${s[1]}" data-m="${m.id}" data-side="1" aria-label="Buts ${name(g,m.a)}">
+        <span class="team">${flag(g,m.a)} ${name(g,m.a)}</span>
+      </div>
+    </div>`;
+  }).join("") +
+  `<div id="standings">${standingsHTML(g)}</div>
+   <button class="reset" id="reset">Réinitialiser le groupe ${g}</button>`;
+
+  $("view-groupes").querySelectorAll("input").forEach(inp => {
+    inp.addEventListener("input", () => {
+      const v = inp.value.replace(/\D/g, "").slice(0, 2);
+      inp.value = v;
+      const cur = scores[inp.dataset.m] || ["",""];
+      cur[+inp.dataset.side] = v;
+      scores[inp.dataset.m] = cur;
+      save();
+      $("standings").innerHTML = standingsHTML(g);
+    });
+  });
+  $("reset").addEventListener("click", () => {
+    matches(g).forEach(m => delete scores[m.id]);
+    save();
+    renderGroup();
+  });
+}
+
+function renderThirds() {
+  const thirds = GROUP_ORDER.slice().sort().map(g => {
+    const rows = standings(g);
+    const r = rows[2];
+    return { g, idx:r.idx, pts:r.pts, diff:r.bp-r.bc, bp:r.bp, played: rows.some(x=>x.pj>0) };
+  }).sort((x,y) => y.pts-x.pts || y.diff-x.diff || y.bp-x.bp || x.g.localeCompare(y.g));
+  const any = thirds.some(t=>t.played);
+  $("view-tiers").innerHTML =
+    `<p class="note">Les 12 troisièmes de groupe classés entre eux — les <strong>8 premiers</strong> sont repêchés
+     pour les 16es de finale. Entre des scores dans les groupes pour voir le classement bouger.</p>
+     <div class="table-box"><table>
+     <thead><tr><th>#</th><th class="left">3e de groupe</th><th>Grp</th><th>Diff</th><th>Pts</th></tr></thead>
+     <tbody>${thirds.map((t,i) => `
+       <tr class="${i<8?'repechage-in':''} ${t.played?'':'idle'}">
+         <td><span class="zone" style="background:${i<8?'var(--gold)':'transparent'}"></span>${i+1}</td>
+         <td class="left" style="font-weight:600">${flag(t.g,t.idx)} ${name(t.g,t.idx)}</td>
+         <td>${t.g}</td><td>${t.diff>0?'+':''}${t.diff}</td><td style="font-weight:700">${t.pts}</td>
+       </tr>`).join("")}</tbody></table></div>
+     ${any ? "" : `<p class="legend" style="text-align:center;margin-top:8px">Aucun score entré pour l'instant — le classement s'animera dès tes premières simulations.</p>`}`;
+}
+
+/* ---------- onglets ---------- */
+$("tab-groupes").addEventListener("click", () => switchTab("groupes"));
+$("tab-tiers").addEventListener("click", () => switchTab("tiers"));
+function switchTab(t) {
+  currentTab = t;
+  $("tab-groupes").classList.toggle("active", t==="groupes");
+  $("tab-tiers").classList.toggle("active", t==="tiers");
+  $("view-groupes").classList.toggle("hidden", t!=="groupes");
+  $("view-tiers").classList.toggle("hidden", t!=="tiers");
+  $("pills").style.display = t==="groupes" ? "flex" : "none";
+  if (t==="tiers") renderThirds();
+}
+
+/* ---------- compte à rebours ---------- */
+function tick() {
+  const diff = Math.max(0, KICKOFF - new Date());
+  if (diff === 0) {
+    $("countdown-label").textContent = "Le Mondial est lancé 🎉";
+    $("countdown").textContent = "";
+    return;
+  }
+  const d = Math.floor(diff/86400000), h = Math.floor(diff%86400000/3600000),
+        m = Math.floor(diff%3600000/60000), s = Math.floor(diff%60000/1000);
+  $("countdown").textContent = `${d}j ${String(h).padStart(2,"0")}:${String(m).padStart(2,"0")}:${String(s).padStart(2,"0")}`;
+}
+tick();
+setInterval(tick, 1000);
+
+renderPills();
+renderGroup();
+</script>
+</body>
+</html>
